@@ -1,18 +1,6 @@
 import numpy as np
 
-
-def shift_signal(signal, shift=None, dist=None):
-    """
-    Circular Shifts given signal upon given dist
-    """
-    n = len(signal)
-    if shift is None:
-        if dist is None:
-            shift = np.random.randint(n)
-        else:
-            shift = np.random.choice(np.arange(n), p=dist)
-    shifted_signal = np.roll(signal, shift)
-    return shifted_signal
+from src.utils import shift_signal
 
 
 def _add_gaussian_noise(signal, sigma):
