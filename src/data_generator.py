@@ -40,3 +40,11 @@ def create_mra_data(signal, num_of_samples, sigma, shift_dist=None):
         signals.append(noisy_signal)
 
     return np.array(signals)
+
+
+def classic_signal():
+    L = 20
+    signal = np.zeros(L)
+    signal[6:10] = 0.35
+    signal[11:14] = -0.35
+    return signal
