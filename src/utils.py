@@ -25,3 +25,14 @@ def relative_error(estimated_signal, true_signal):
     shift = np.argmin(corr)
     error = np.min(corr) / np.linalg.norm(true_signal)
     return error, shift
+
+
+def generate_shift_dist(s, L):
+    """
+    Generates experiment distribution of length L
+    :param s: regulation param
+    :param L: length
+    """
+    shift_dist = np.array([np.exp(-np.square(t / s)) for t in np.arange(1, L + 1)])
+    shift_dist /= np.sum(shift_dist)
+    return shift_dist
