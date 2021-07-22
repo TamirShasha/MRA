@@ -4,9 +4,15 @@ import numpy as np
 from src.data_generator import classic_signal, create_mra_data
 from src.utils import shift_signal, relative_error, generate_shift_dist
 from src.em_algorithm import EmAlgorithm
+from src.em_un_algorithm import EmUnAlgorithm
 
 
-def em_experiment(debug_plot=False):
+def em_experiment(em_alg: bool = True, debug_plot=False):
+    """
+    :param em_alg: which EM algorithm to run, True for EM with distribution and False without distribution
+    :param debug_plot:
+    :return:
+    """
     signal = classic_signal()
     N = 2000
     L = signal.shape[0]
@@ -21,10 +27,10 @@ def em_experiment(debug_plot=False):
             print(f'At experiment #{t} for shift_dist #{i}')
             mra_data = create_mra_data(signal, N, noise_std, shift_dist)
 
-            em_algo = EmAlgorithm(mra_data, noise_std)
+            em_algo = EmAlgorithm(mra_data, noise_std) if em_alg else EmUnAlgorithm(mra_data, noise_std)
             em_results = em_algo.run(1)
 
-            signal_est = em_results[-1, 0]
+            signal_est = em_results[-1, 0] if em_alg else em_results[0]
             err, shift = relative_error(signal_est, signal)
             exp_errs[i] += err
 
@@ -50,4 +56,5 @@ def em_experiment(debug_plot=False):
     plt.show()
 
 
-em_experiment()
+em_experiment(em_alg=False)
+em_experiment(em_alg=True)
