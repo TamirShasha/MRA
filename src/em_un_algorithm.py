@@ -47,3 +47,28 @@ class EmUnAlgorithm(EmAlgorithm):
             results.append(curr_signal_est)
 
         return np.array(results)
+
+
+class EmUnAlgorithmFFT(EmAlgorithm):
+    def em_iteration(self, fftx, fftX, sqnormX, sigma):
+        C = np.fft.ifft(np.conjugate(fftx) * fftX).real
+        T = (2 * C - sqnormX) / (2 * sigma**2)
+        T = (T.T - T.max(axis=1)).T
+        W = np.exp(T)
+        W = (W.T / np.sum(W, axis=1)).T
+        fftW = np.fft.fft(W)
+        return np.mean(np.conjugate(fftW)*fftX, axis=0)
+
+    def run(self, iterations=20):
+        curr_signal_est = np.arange(self.L, dtype=float) / self.L
+        fftx = np.fft.fft(curr_signal_est)
+        fftX = np.fft.fft(self.data)
+        sqnormX = (np.abs(self.data)**2).max(axis=0)
+
+        results = []
+        for t in range(iterations):
+            print(f'At iteration {t}')
+            fftx = self.em_iteration(fftx, fftX, sqnormX, self.noise_std)
+            results.append(np.fft.ifft(fftx).real)
+
+        return np.array(results)

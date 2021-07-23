@@ -64,3 +64,31 @@ class EmAlgorithm:
             results.append((curr_signal_est, curr_shift_dist_est))
 
         return np.array(results)
+
+
+class EmAlgorithmFFT(EmAlgorithm):
+    def em_iteration(self, fftx, fftX, rho, sqnormX, sigma):
+        C = np.fft.ifft(np.conjugate(fftx) * fftX).real
+        T = (2 * C - sqnormX) / (2 * sigma**2)
+        T = (T.T - T.max(axis=1)).T
+        W = np.exp(T)
+        W = W * rho
+        W = (W.T / np.sum(W, axis=1)).T
+        fftW = np.fft.fft(W)
+        return np.mean(np.conjugate(fftW)*fftX, axis=0), np.mean(W, axis=0)
+
+    def run(self, iterations=20):
+        curr_signal_est = np.arange(self.L, dtype=float) / self.L
+        curr_shift_dist_est = np.full(self.L, fill_value=1 / self.L)
+
+        fftx = np.fft.fft(curr_signal_est)
+        fftX = np.fft.fft(self.data)
+        sqnormX = (np.abs(self.data)**2).max(axis=0)
+
+        results = []
+        for t in range(iterations):
+            print(f'At iteration {t}')
+            fftx, curr_shift_dist_est = self.em_iteration(fftx, fftX, curr_shift_dist_est, sqnormX, self.noise_std)
+            results.append((np.fft.ifft(fftx).real, curr_shift_dist_est))
+
+        return np.array(results)
