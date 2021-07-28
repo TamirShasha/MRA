@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-from src.utils import shift_signal
+from src.utils import shift_signal, generate_shift_dist
 
 
 class EmAlgorithm:
@@ -69,7 +69,7 @@ class EmAlgorithm:
 class EmAlgorithmFFT(EmAlgorithm):
     def em_iteration(self, fftx, fftX, rho, sqnormX, sigma):
         C = np.fft.ifft(np.conjugate(fftx) * fftX).real
-        T = (2 * C - sqnormX) / (2 * sigma ** 2)
+        T = (2 * C.T - sqnormX).T / (2 * sigma ** 2)
         T = (T.T - T.max(axis=1)).T
         W = np.exp(T)
         W = W * rho
@@ -80,10 +80,11 @@ class EmAlgorithmFFT(EmAlgorithm):
     def run(self, iterations=20):
         curr_signal_est = np.arange(self.L, dtype=float) / self.L
         curr_shift_dist_est = np.full(self.L, fill_value=1 / self.L)
+        # curr_shift_dist_est = generate_shift_dist(1.5, self.L)
 
         fftx = np.fft.fft(curr_signal_est)
         fftX = np.fft.fft(self.data)
-        sqnormX = (np.abs(self.data) ** 2).max(axis=0)
+        sqnormX = (np.abs(self.data) ** 2).max(axis=1)
 
         results = []
         for t in range(iterations):
