@@ -34,5 +34,5 @@ def classic_signal():
     L = 20
     signal = np.zeros(L)
     signal[6:10] = 0.35
-    signal[11:14] = -0.35
+    signal[11:15] = -0.35
     return signal

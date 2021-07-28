@@ -8,7 +8,7 @@ from src.em_algorithm import EmAlgorithm, EmAlgorithmFFT
 
 def em_numerical_error():
     signal = classic_signal()
-    N = 2000
+    N = 50000
     L = signal.shape[0]
     # shift_dist = generate_shift_dist(3, L)
     # shift_dist = np.random.random(L)
@@ -16,7 +16,7 @@ def em_numerical_error():
     shift_dist = np.full(L, 1 / L)
 
     times = 30
-    noise_stds = np.exp(np.linspace(-3, 0, 10))
+    noise_stds = np.exp(np.linspace(-3, 0, 20))
     exp_errs = np.zeros_like(noise_stds, dtype=float)
     for i, noise_std in enumerate(noise_stds):
         for t in range(times):

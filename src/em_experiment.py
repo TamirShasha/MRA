@@ -8,6 +8,7 @@ from src.em_un_algorithm import EmUnAlgorithm, EmUnAlgorithmFFT
 
 np.random.seed(500)
 
+
 def em_experiment(em_alg: bool = True, use_fft: bool = False, debug_plot=False):
     """
     :param em_alg: which EM algorithm to run, True for EM with distribution and False without distribution

@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-from src.utils import shift_signal, generate_shift_dist
+from src.utils import shift_signal, generate_shift_dist, relative_error
 
 
 class EmAlgorithm:
@@ -10,8 +10,8 @@ class EmAlgorithm:
                  data: np.ndarray,
                  noise_std):
         self.data = data
-        self.N = data.shape[0]
-        self.L = data.shape[1]
+        self.N = data.shape[1]
+        self.L = data.shape[0]
         self.noise_std = noise_std
 
         self.shifted_data = np.array([np.roll(self.data, l, axis=1) for l in range(self.L)])
@@ -68,28 +68,34 @@ class EmAlgorithm:
 
 class EmAlgorithmFFT(EmAlgorithm):
     def em_iteration(self, fftx, fftX, rho, sqnormX, sigma):
-        C = np.fft.ifft(np.conjugate(fftx) * fftX).real
-        T = (2 * C.T - sqnormX).T / (2 * sigma ** 2)
-        T = (T.T - T.max(axis=1)).T
+        C = np.fft.ifft((fftX.T * np.conjugate(fftx))).T
+        T = (2 * C - sqnormX.T) / (2 * sigma ** 2)
+        T -= T.max(axis=0)
         W = np.exp(T)
-        W = W * rho
-        W = (W.T / np.sum(W, axis=1)).T
-        fftW = np.fft.fft(W)
-        return np.mean(np.conjugate(fftW) * fftX, axis=0), np.mean(W, axis=0)
+        W = (W.T * rho).T
+        W /= np.sum(W, axis=0)
+        fftW = np.fft.fft(W.T)
+        return np.mean(np.conjugate(fftW).T * fftX, axis=1), np.mean(W, 1)
 
-    def run(self, iterations=20):
-        curr_signal_est = np.arange(self.L, dtype=float) / self.L
-        curr_shift_dist_est = np.full(self.L, fill_value=1 / self.L)
-        # curr_shift_dist_est = generate_shift_dist(1.5, self.L)
+    def run(self, iterations=200, tol=1e-3):
+        curr_signal_est = (np.arange(self.L, dtype=float) / self.L).T
+
+        curr_shift_dist_est = np.random.random(self.L)
+        curr_shift_dist_est /= sum(curr_shift_dist_est)
 
         fftx = np.fft.fft(curr_signal_est)
-        fftX = np.fft.fft(self.data)
-        sqnormX = (np.abs(self.data) ** 2).max(axis=1)
+        fftX = np.fft.fft(self.data.T).T
+        sqnormX = np.square(self.data).sum(axis=0)
 
         results = []
         for t in range(iterations):
-            # print(f'At iteration {t}')
             fftx, curr_shift_dist_est = self.em_iteration(fftx, fftX, curr_shift_dist_est, sqnormX, self.noise_std)
-            results.append((np.fft.ifft(fftx).real, curr_shift_dist_est))
+            next_signal_est = np.fft.ifft(fftx).real
+            results.append((next_signal_est, curr_shift_dist_est))
+            if relative_error(curr_signal_est, next_signal_est)[0] < tol:
+                print(f'Reached the tolerance at iteration #{t}')
+                break
+
+            curr_signal_est = next_signal_est
 
         return np.array(results)
