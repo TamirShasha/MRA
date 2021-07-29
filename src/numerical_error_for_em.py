@@ -8,12 +8,12 @@ from src.em_algorithm import EmAlgorithm, EmAlgorithmFFT
 
 def em_numerical_error():
     signal = classic_signal()
-    N = 50000
+    N = 100000
     L = signal.shape[0]
     # shift_dist = generate_shift_dist(3, L)
     # shift_dist = np.random.random(L)
     # shift_dist /= np.sum(shift_dist)
-    shift_dist = np.full(L, 1 / L)
+    shift_dist = np.full(L, 3 / L)
 
     times = 30
     noise_stds = np.exp(np.linspace(-3, 0, 20))

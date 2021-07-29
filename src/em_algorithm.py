@@ -77,7 +77,7 @@ class EmAlgorithmFFT(EmAlgorithm):
         fftW = np.fft.fft(W.T)
         return np.mean(np.conjugate(fftW).T * fftX, axis=1), np.mean(W, 1)
 
-    def run(self, iterations=200, tol=1e-3):
+    def run(self, iterations=200, tol=1e-4):
         curr_signal_est = (np.arange(self.L, dtype=float) / self.L).T
 
         curr_shift_dist_est = np.random.random(self.L)

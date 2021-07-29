@@ -5,7 +5,6 @@ from src.data_generator import classic_signal, create_mra_data
 from src.utils import generate_shift_dist, relative_error, shift_signal
 from src.em_algorithm import EmAlgorithmFFT, EmAlgorithm
 
-
 # np.random.seed(500)
 
 
@@ -17,14 +16,18 @@ def sample_complexity_experiment():
 
     noise_std = 1
     mra_data = create_mra_data(signal, N, noise_std, shift_dist)
+    # mra_data2 = create_mra_data(signal, N // 2, noise_std/2, shift_dist)
+    # mra_data = np.concatenate([mra_data, mra_data2])
+    # plt.plot(signal)
+    # plt.show()
+    #
     # plt.plot(mra_data[0])
     # plt.show()
-    # exit()
 
     # mra_data = np.array([[1, 2, 3, 3], [4, 5, 5, 6], [7, 7, 8, 9]]).T
     em_algo = EmAlgorithmFFT(mra_data.T, noise_std)
     # em_algo = EmAlgorithm(mra_data, noise_std)
-    em_results = em_algo.run()
+    em_results = em_algo.run(100)
 
     signal_est = em_results[-1, 0]
     err, shift = relative_error(signal_est, signal)
